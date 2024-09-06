@@ -1,0 +1,34 @@
+# Archivos y directorios específicos de Visual Studio
+.vs/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.suo
+
+# Archivos generados por el sistema
+*.log
+*.tmp
+
+# Directorios de paquetes
+packages/
+*.nupkg
+*.snupkg
+
+# Archivos de compilación y binarios
+bin/
+obj/
+Debug/
+Release/
+
+# Archivos de configuración de entorno local
+appsettings.Development.json
+appsettings.local.json
+
+# Archivos de la base de datos
+*.mdf
+*.ldf
+
+# Directorios específicos de herramientas y configuraciones locales
+*.idea/
+*.vscode/
