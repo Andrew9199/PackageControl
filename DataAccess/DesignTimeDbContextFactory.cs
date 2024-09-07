@@ -7,7 +7,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<PackageCon
     public PackageControlDataContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PackageControlDataContext>();
-        optionsBuilder.UseSqlServer("Server=DESKTOP-7BMEFPA\\SQLEXPRESS;Database=DocumentGenerator2;User Id=sa;Password=sa;Encrypt=False;");
+        optionsBuilder.UseSqlServer("Server=DESKTOP-SOMFH3C\\SQLEXPRESS;Database=PackageControlDB;User Id=sa;Password=sa;Encrypt=False");
 
         return new PackageControlDataContext(optionsBuilder.Options);
     }
