@@ -1,0 +1,55 @@
+﻿@page "/assign-role-to-user"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PackageControl.Data
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<h3>Asignar Rol a un Usuario</h3>
+
+<div>
+    <label>Correo del Usuario:</label>
+    <input @bind="userEmail" />
+</div>
+<div>
+    <label>Rol:</label>
+    <select @bind="selectedRole">
+        <option value="">Selecciona un rol</option>
+        @foreach (var role in roles)
+        {
+            <option value="@role">@role</option>
+        }
+    </select>
+</div>
+<button @onclick="AssignRole">Asignar Rol</button>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@code {
+    private string userEmail;
+    private string selectedRole;
+    private List<string> roles = new();
+    private string message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = (await RoleManager.Roles.Select(r => r.Name).ToListAsync());
+    }
+
+    private async Task AssignRole()
+    {
+        var user = await UserManager.FindByEmailAsync(userEmail);
+        if (user != null && !string.IsNullOrEmpty(selectedRole))
+        {
+            var result = await UserManager.AddToRoleAsync(user, selectedRole);
+            message = result.Succeeded ? "Rol asignado exitosamente." : "Error al asignar el rol.";
+        }
+        else
+        {
+            message = "Usuario o rol no válido.";
+        }
+    }
+}
