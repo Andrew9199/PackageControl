@@ -1,39 +1,52 @@
 ﻿@page "/role-management"
+
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using PackageControl.Data
-@inject UserManager<ApplicationUser> UserManager
+@using System.ComponentModel.DataAnnotations
 @inject RoleManager<IdentityRole> RoleManager
+@inject ILogger<RoleManagement> Logger
 
-<h3>Gestión de Roles</h3>
+<PageTitle>Role Management</PageTitle>
 
-<div>
-    <h4>Agregar Nuevo Rol</h4>
-    <input @bind="newRoleName" placeholder="Nombre del rol" />
-    <button @onclick="AddRole">Agregar Rol</button>
-    @if (!string.IsNullOrEmpty(addRoleMessage))
-    {
-        <p>@addRoleMessage</p>
-    }
-</div>
+<h1>Role Management</h1>
 
-<div>
-    <h4>Roles Existentes</h4>
-    <ul>
-        @foreach (var role in roles)
-        {
-            <li>
-                @role.Name
-                <button @onclick="() => DeleteRole(role.Id)">Eliminar</button>
-            </li>
-        }
-    </ul>
+<div class="row">
+    <div class="col-md-4">
+        <StatusMessage Message="@Message" />
+        <EditForm Model="Input" OnValidSubmit="AddRole" FormName="roleForm">
+            <DataAnnotationsValidator />
+            <h2>Add a new role</h2>
+            <hr />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.RoleName" class="form-control" placeholder="Role Name" />
+                <label for="role-name">Role Name</label>
+                <ValidationMessage For="() => Input.RoleName" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Add Role</button>
+        </EditForm>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        <h2>Existing Roles</h2>
+        <ul>
+            @foreach (var role in roles)
+            {
+                <li>
+                    @role.Name
+                    <button @onclick="() => DeleteRole(role.Id)">Delete</button>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
 
 @code {
-    private string newRoleName;
-    private string addRoleMessage;
-    private List<IdentityRole> roles = new();
+    private IEnumerable<IdentityRole> roles = Enumerable.Empty<IdentityRole>();
+    private string? Message { get; set; }
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,29 +55,17 @@
 
     private async Task AddRole()
     {
-        Console.WriteLine("Entrando a AddRole");  // Depuración
-        if (!string.IsNullOrWhiteSpace(newRoleName))
-        {
-            Console.WriteLine("El nombre del nuevo rol no está vacío: " + newRoleName);  // Depuración
-            var role = new IdentityRole(newRoleName);
-            var result = await RoleManager.CreateAsync(role);
+        var role = new IdentityRole(Input.RoleName);
+        var result = await RoleManager.CreateAsync(role);
 
-            if (result.Succeeded)
-            {
-                addRoleMessage = "Rol agregado exitosamente.";
-                newRoleName = string.Empty;
-                roles.Add(role);
-                Console.WriteLine("Rol creado exitosamente: " + newRoleName);  // Depuración
-            }
-            else
-            {
-                addRoleMessage = "Error al agregar el rol: " + string.Join(", ", result.Errors.Select(e => e.Description));
-                Console.WriteLine("Error al agregar el rol: " + string.Join(", ", result.Errors.Select(e => e.Description)));  // Depuración
-            }
+        if (result.Succeeded)
+        {
+            Message = "Role added successfully.";
+            roles = await RoleManager.Roles.ToListAsync(); // Refresh roles list
         }
         else
         {
-            Console.WriteLine("El nombre del rol está vacío");  // Depuración
+            Message = $"Error adding role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
         }
     }
 
@@ -76,8 +77,14 @@
             var result = await RoleManager.DeleteAsync(role);
             if (result.Succeeded)
             {
-                roles.Remove(role);
+                roles = await RoleManager.Roles.ToListAsync(); // Refresh roles list
             }
         }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        public string RoleName { get; set; } = string.Empty;
     }
 }

@@ -1,55 +1,93 @@
 ﻿@page "/assign-role-to-user"
+
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using PackageControl.Data
+@using System.ComponentModel.DataAnnotations
 @inject UserManager<ApplicationUser> UserManager
 @inject RoleManager<IdentityRole> RoleManager
 
-<h3>Asignar Rol a un Usuario</h3>
+<PageTitle>Assign Role to User</PageTitle>
 
-<div>
-    <label>Correo del Usuario:</label>
-    <input @bind="userEmail" />
-</div>
-<div>
-    <label>Rol:</label>
-    <select @bind="selectedRole">
-        <option value="">Selecciona un rol</option>
-        @foreach (var role in roles)
+<h3>Assign Role to a User</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Add FormName attribute to the EditForm to uniquely identify it -->
+        <EditForm Model="Input" OnValidSubmit="AssignRole" FormName="assignRoleForm">
+            <DataAnnotationsValidator />
+            <h2>Assign a Role</h2>
+            <hr />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.UserEmail" class="form-control" placeholder="Email" />
+                <label for="user-email">User Email</label>
+                <ValidationMessage For="() => Input.UserEmail" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.SelectedRole" class="form-select">
+                    <option value="">Select a role</option>
+                    @foreach (var role in roles)
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </InputSelect>
+                <label for="role">Role</label>
+                <ValidationMessage For="() => Input.SelectedRole" class="text-danger" />
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Assign Role</button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(message))
         {
-            <option value="@role">@role</option>
+            <p>@message</p>
         }
-    </select>
+    </div>
 </div>
-<button @onclick="AssignRole">Asignar Rol</button>
-
-@if (!string.IsNullOrEmpty(message))
-{
-    <p>@message</p>
-}
 
 @code {
-    private string userEmail;
-    private string selectedRole;
-    private List<string> roles = new();
-    private string message;
+    private IEnumerable<string> roles = Enumerable.Empty<string>();
+    private string? message;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        roles = (await RoleManager.Roles.Select(r => r.Name).ToListAsync());
+        roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
     }
 
     private async Task AssignRole()
     {
-        var user = await UserManager.FindByEmailAsync(userEmail);
-        if (user != null && !string.IsNullOrEmpty(selectedRole))
+        var user = await UserManager.FindByEmailAsync(Input.UserEmail);
+        if (user != null && !string.IsNullOrEmpty(Input.SelectedRole))
         {
-            var result = await UserManager.AddToRoleAsync(user, selectedRole);
-            message = result.Succeeded ? "Rol asignado exitosamente." : "Error al asignar el rol.";
+            var result = await UserManager.AddToRoleAsync(user, Input.SelectedRole);
+            if (result.Succeeded)
+            {
+                message = "Role assigned successfully.";
+            }
+            else
+            {
+                message = $"Error assigning role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            }
         }
         else
         {
-            message = "Usuario o rol no válido.";
+            message = "Invalid user or role.";
         }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string UserEmail { get; set; } = string.Empty;
+
+        [Required]
+        public string SelectedRole { get; set; } = string.Empty;
     }
 }

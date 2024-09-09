@@ -8,6 +8,7 @@
 @using PackageControl.Data
 
 @inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IEmailSender<ApplicationUser> EmailSender
@@ -78,6 +79,22 @@
         {
             identityErrors = result.Errors;
             return;
+        }
+
+        // Agregar el rol "User" al nuevo usuario
+        var roleExists = await RoleManager.RoleExistsAsync("User");
+        if (roleExists)
+        {
+            await UserManager.AddToRoleAsync(user, "User");
+        }
+        else
+        {
+            // Opcional: Crear el rol "User" si no existe
+            var createRoleResult = await RoleManager.CreateAsync(new IdentityRole("User"));
+            if (createRoleResult.Succeeded)
+            {
+                await UserManager.AddToRoleAsync(user, "User");
+            }
         }
 
         Logger.LogInformation("User created a new account with password.");
