@@ -65,14 +65,26 @@
         var user = await UserManager.FindByEmailAsync(Input.UserEmail);
         if (user != null && !string.IsNullOrEmpty(Input.SelectedRole))
         {
-            var result = await UserManager.AddToRoleAsync(user, Input.SelectedRole);
-            if (result.Succeeded)
+            // Obtener todos los roles actuales del usuario
+            var currentRoles = await UserManager.GetRolesAsync(user);
+
+            // Remover todos los roles actuales
+            var removeResult = await UserManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+            {
+                message = $"Error removing roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}";
+                return;
+            }
+
+            // Asignar el nuevo rol
+            var addResult = await UserManager.AddToRoleAsync(user, Input.SelectedRole);
+            if (addResult.Succeeded)
             {
                 message = "Role assigned successfully.";
             }
             else
             {
-                message = $"Error assigning role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                message = $"Error assigning role: {string.Join(", ", addResult.Errors.Select(e => e.Description))}";
             }
         }
         else
