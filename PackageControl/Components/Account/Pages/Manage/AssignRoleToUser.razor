@@ -1,7 +1,9 @@
 ﻿@page "/assign-role-to-user"
+@attribute [Authorize(Roles = "Admin")]
 
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
 @using PackageControl.Data
 @using System.ComponentModel.DataAnnotations
 @inject UserManager<ApplicationUser> UserManager
