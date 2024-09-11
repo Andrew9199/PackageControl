@@ -28,21 +28,67 @@
             <h2>Create a new account.</h2>
             <hr />
             <ValidationSummary class="text-danger" role="alert" />
+
+            <!-- Alias (User Name) -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.UserName" class="form-control" autocomplete="username" aria-required="true" placeholder="Alias" />
+                <label for="username">Alias (User Name)</label>
+                <ValidationMessage For="() => Input.UserName" class="text-danger" />
+            </div>
+
+            <!-- Tipo de Documento (Dropdown) -->
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.IdentificationType" class="form-control">
+                    <option value="">Select ID Type</option>
+                    <option value="Cedula">Cédula</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                </InputSelect>
+                <label for="identificationType">Identification Type</label>
+                <ValidationMessage For="() => Input.IdentificationType" class="text-danger" />
+            </div>
+
+            <!-- Número de Identificación -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.IdentificationNumber" class="form-control" placeholder="ID Number" />
+                <label for="identificationNumber">Identification Number</label>
+                <ValidationMessage For="() => Input.IdentificationNumber" class="text-danger" />
+            </div>
+
+            <!-- Nombre -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First Name" />
+                <label for="firstName">First Name</label>
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+
+            <!-- Apellido -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last Name" />
+                <label for="lastName">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+
+            <!-- Email -->
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
+
+            <!-- Contraseña -->
             <div class="form-floating mb-3">
                 <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label for="password">Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
+
+            <!-- Confirmar Contraseña -->
             <div class="form-floating mb-3">
                 <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label for="confirm-password">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
@@ -70,7 +116,13 @@
     {
         var user = CreateUser();
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        // Set user properties
+        await UserStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
+        user.IdentificationType = Input.IdentificationType;
+        user.IdentificationNumber = Input.IdentificationNumber;
+        user.FirstName = Input.FirstName;
+        user.LastName = Input.LastName;
+
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
@@ -81,7 +133,7 @@
             return;
         }
 
-        // Agregar el rol "User" al nuevo usuario
+        // Add "User" role to the new user
         var roleExists = await RoleManager.RoleExistsAsync("User");
         if (roleExists)
         {
@@ -89,7 +141,6 @@
         }
         else
         {
-            // Opcional: Crear el rol "User" si no existe
             var createRoleResult = await RoleManager.CreateAsync(new IdentityRole("User"));
             if (createRoleResult.Succeeded)
             {
@@ -143,6 +194,26 @@
 
     private sealed class InputModel
     {
+        [Required]
+        [Display(Name = "Alias (User Name)")]
+        public string UserName { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Identification Type")]
+        public string IdentificationType { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Identification Number")]
+        public string IdentificationNumber { get; set; } = "";
+
+        [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; } = "";
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]

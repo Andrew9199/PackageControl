@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
-namespace PackageControl.Data
+namespace Entities
 {
     public class ApplicationUser : IdentityUser
     {
