@@ -2,6 +2,7 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using PackageControl.Data
 
 @inject UserManager<ApplicationUser> UserManager
@@ -19,15 +20,53 @@
         <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
+
+            <!-- Username (Editable) -->
             <div class="form-floating mb-3">
-                <input type="text" value="@username" class="form-control" placeholder="Please choose your username." disabled />
+                <InputText @bind-Value="Input.UserName" class="form-control" placeholder="Please choose your username." />
                 <label for="username" class="form-label">Username</label>
+                <ValidationMessage For="() => Input.UserName" class="text-danger" />
             </div>
+
+            <!-- Phone Number -->
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
                 <label for="phone-number" class="form-label">Phone number</label>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
+
+            <!-- Name -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Name" class="form-control" placeholder="Please enter your name." />
+                <label for="name" class="form-label">Name</label>
+                <ValidationMessage For="() => Input.Name" class="text-danger" />
+            </div>
+
+            <!-- LastName -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Please enter your last name." />
+                <label for="last-name" class="form-label">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+
+            <!-- Tipo de Identificación (Dropdown) -->
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.IdentificationType" class="form-control">
+                    <option value="">Select ID Type</option>
+                    <option value="Cedula">Cédula</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                </InputSelect>
+                <label for="identification-type" class="form-label">Identification Type</label>
+                <ValidationMessage For="() => Input.IdentificationType" class="text-danger" />
+            </div>
+
+            <!-- Número de Identificación -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.IdentificationNumber" class="form-control" placeholder="Please enter your identification number." />
+                <label for="identification-number" class="form-label">Identification Number</label>
+                <ValidationMessage For="() => Input.IdentificationNumber" class="text-danger" />
+            </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </EditForm>
     </div>
@@ -37,6 +76,10 @@
     private ApplicationUser user = default!;
     private string? username;
     private string? phoneNumber;
+    private string? name;
+    private string? lastName;
+    private string? identificationType;
+    private string? identificationNumber;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -49,19 +92,73 @@
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+        // Retrieve additional properties if they are available
+        name = user.FirstName;
+        lastName = user.LastName;
+        identificationType = user.IdentificationType;
+        identificationNumber = user.IdentificationNumber;
 
+        Input.UserName ??= username;
         Input.PhoneNumber ??= phoneNumber;
+        Input.Name ??= name;
+        Input.LastName ??= lastName;
+        Input.IdentificationType ??= identificationType;
+        Input.IdentificationNumber ??= identificationNumber;
     }
 
     private async Task OnValidSubmitAsync()
     {
+        if (Input.UserName != username)
+        {
+            var userExists = await UserManager.FindByNameAsync(Input.UserName);
+            if (userExists != null)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Username already taken.", HttpContext);
+                return;
+            }
+
+            var setUserNameResult = await UserManager.SetUserNameAsync(user, Input.UserName);
+            if (!setUserNameResult.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set username.", HttpContext);
+                return;
+            }
+        }
+
         if (Input.PhoneNumber != phoneNumber)
         {
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
             if (!setPhoneResult.Succeeded)
             {
                 RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
+                return;
             }
+        }
+
+        // Verify that the new identification number is not in use
+        if (Input.IdentificationNumber != identificationNumber)
+        {
+            var userWithId = await UserManager.Users
+                .Where(u => u.IdentificationNumber == Input.IdentificationNumber)
+                .FirstOrDefaultAsync();
+            if (userWithId != null)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Identification number already in use.", HttpContext);
+                return;
+            }
+        }
+
+        // Update additional properties if they are changed
+        user.FirstName = Input.Name;
+        user.LastName = Input.LastName;
+        user.IdentificationType = Input.IdentificationType;
+        user.IdentificationNumber = Input.IdentificationNumber;
+
+        var updateResult = await UserManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to update profile.", HttpContext);
+            return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
@@ -70,8 +167,26 @@
 
     private sealed class InputModel
     {
+        [Required]
+        [Display(Name = "Username")]
+        public string? UserName { get; set; }
+
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [Display(Name = "Name")]
+        public string? Name { get; set; }
+
+        [Display(Name = "Last Name")]
+        public string? LastName { get; set; }
+
+        [Required]
+        [Display(Name = "Identification Type")]
+        public string? IdentificationType { get; set; }
+
+        [Required]
+        [Display(Name = "Identification Number")]
+        public string? IdentificationNumber { get; set; }
     }
 }
