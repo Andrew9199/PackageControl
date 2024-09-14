@@ -26,7 +26,7 @@
                 <InputText @bind-Value="Input.UserName" class="form-control" placeholder="Please choose your username." />
                 <label for="username" class="form-label">Username</label>
                 <ValidationMessage For="() => Input.UserName" class="text-danger" />
-            </div>
+    </div>
 
             <!-- Phone Number -->
             <div class="form-floating mb-3">
@@ -88,7 +88,7 @@
     private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
-    {
+{
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
@@ -104,12 +104,12 @@
         Input.LastName ??= lastName;
         Input.IdentificationType ??= identificationType;
         Input.IdentificationNumber ??= identificationNumber;
-    }
+}
 
     private async Task OnValidSubmitAsync()
-    {
+{
         if (Input.UserName != username)
-        {
+{
             var userExists = await UserManager.FindByNameAsync(Input.UserName);
             if (userExists != null)
             {
@@ -122,22 +122,22 @@
             {
                 RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set username.", HttpContext);
                 return;
-            }
+}
         }
 
         if (Input.PhoneNumber != phoneNumber)
-        {
+    {
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
             if (!setPhoneResult.Succeeded)
             {
                 RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
                 return;
-            }
+    }
         }
 
         // Verify that the new identification number is not in use
         if (Input.IdentificationNumber != identificationNumber)
-        {
+    {
             var userWithId = await UserManager.Users
                 .Where(u => u.IdentificationNumber == Input.IdentificationNumber)
                 .FirstOrDefaultAsync();
@@ -163,10 +163,10 @@
 
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
-    }
+        }
 
     private sealed class InputModel
-    {
+        {
         [Required]
         [Display(Name = "Username")]
         public string? UserName { get; set; }

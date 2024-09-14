@@ -1,0 +1,104 @@
+﻿@page "/users"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using PackageControl.Data
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Users List</PageTitle>
+
+<h3>Users List</h3>
+
+<!-- Formulario para la búsqueda -->
+<EditForm Model="SearchModel" OnValidSubmit="OnSearch" FormName="userSearchForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+    <div class="mb-3">
+        <!-- Asegúrate de usar @bind-Value y no solo @bind -->
+        <InputText @bind-Value="SearchModel.SearchTerm" class="form-control" placeholder="Search by name..." />
+        <ValidationMessage For="() => SearchModel.SearchTerm" />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</EditForm>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!users.Any())
+{
+    <p>No users found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Phone Number</th>
+                <th>Name</th>
+                <th>Last Name</th>
+                <th>Identification Type</th>
+                <th>Identification Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in filteredUsers)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.PhoneNumber</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>@user.IdentificationType</td>
+                    <td>@user.IdentificationNumber</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ApplicationUser>? users;
+    private List<ApplicationUser> filteredUsers = new();
+
+    [SupplyParameterFromForm]
+    private UserSearchModel SearchModel { get; set; } = new UserSearchModel();
+
+    // Cargar la lista de usuarios al inicializar
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserManager.Users.ToListAsync();
+        filteredUsers = users;
+    }
+
+    // Método para realizar la búsqueda
+    private void OnSearch()
+    {
+        Console.WriteLine("Entrando en OnSearch con valor: " + SearchModel.SearchTerm); // Depuración
+
+        if (!string.IsNullOrWhiteSpace(SearchModel.SearchTerm))
+        {
+            filteredUsers = users
+                ?.Where(u => u.FirstName.Contains(SearchModel.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                             u.LastName.Contains(SearchModel.SearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList() ?? new List<ApplicationUser>();
+        }
+        else
+        {
+            // Si no hay término de búsqueda, mostrar todos los usuarios
+            filteredUsers = users ?? new List<ApplicationUser>();
+        }
+
+        StateHasChanged(); // Asegurarse de que la UI se actualice después de la búsqueda
+    }
+
+    // Modelo que representa los datos de entrada del formulario
+    private sealed class UserSearchModel
+    {
+        public string SearchTerm { get; set; } = string.Empty;
+    }
+}
