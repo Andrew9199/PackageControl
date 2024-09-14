@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using PackageControl.Components;
 using PackageControl.Components.Account;
 using PackageControl.Data;
+using Entities;
+using Business;
+using DataAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +19,11 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<B_Package>();
 
 // Configure database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<PackageControlDataContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -28,7 +32,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddEntityFrameworkStores<PackageControlDataContext>()
 .AddDefaultTokenProviders();
 
 // Configure cookie authentication

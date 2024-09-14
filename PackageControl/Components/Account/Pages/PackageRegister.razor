@@ -1,0 +1,102 @@
+﻿@page "/packages/create"
+@using Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Authorization
+@inject UserManager<ApplicationUser> UserManager
+@inject Business.B_Package PackageService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize(Roles = "Admin,User")]
+
+<PageTitle>Agregar Paquete</PageTitle>
+
+<h3>Agregar Paquete</h3>
+
+<EditForm Model="Input" OnValidSubmit="HandleCreatePackage" FormName="createPackageForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <!-- Dirección Principal -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.AddressMainStreet" class="form-control" placeholder="Dirección Principal" id="addressMainStreet" />
+        <label for="addressMainStreet">Dirección Principal</label>
+        <ValidationMessage For="() => Input.AddressMainStreet" class="text-danger" />
+    </div>
+
+    <!-- Dirección Secundaria -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.AddressSecondaryStreet" class="form-control" placeholder="Dirección Secundaria" id="addressSecondaryStreet" />
+        <label for="addressSecondaryStreet">Dirección Secundaria</label>
+        <ValidationMessage For="() => Input.AddressSecondaryStreet" class="text-danger" />
+    </div>
+
+    <!-- Número de Casa -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.HouseNumber" class="form-control" placeholder="Número de Casa" id="houseNumber" />
+        <label for="houseNumber">Número de Casa</label>
+        <ValidationMessage For="() => Input.HouseNumber" class="text-danger" />
+    </div>
+
+    <!-- Barrio -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.AddressNeighborhood" class="form-control" placeholder="Barrio" id="addressNeighborhood" />
+        <label for="addressNeighborhood">Barrio</label>
+        <ValidationMessage For="() => Input.AddressNeighborhood" class="text-danger" />
+    </div>
+
+    <!-- Parroquia -->
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="Input.AddressParish" class="form-control" placeholder="Parroquia" id="addressParish" />
+        <label for="addressParish">Parroquia</label>
+        <ValidationMessage For="() => Input.AddressParish" class="text-danger" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar Paquete</button>
+</EditForm>
+
+@code {
+    private InputModel Input { get; set; } = new InputModel();
+
+    private async Task HandleCreatePackage()
+    {
+        // Obtener el estado de autenticación
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user != null)
+        {
+            var newPackage = new Package
+                {
+                    PackageId = Guid.NewGuid().ToString(), // Generamos un ID único
+                    AddressMainStreet = Input.AddressMainStreet,
+                    AddressSecondaryStreet = Input.AddressSecondaryStreet,
+                    HouseNumber = Input.HouseNumber,
+                    AddressNeighborhood = Input.AddressNeighborhood,
+                    AddressParish = Input.AddressParish,
+                    ApplicationUserId = user.Id // Relacionamos el paquete con el usuario actual
+                };
+
+            // Llamamos al servicio para agregar el paquete
+            PackageService.CreatePackage(newPackage); // Asegúrate de que este método sea asíncrono
+
+            // Redirigir a la página de listado de paquetes o a donde quieras
+            NavigationManager.NavigateTo("/packages");
+        }
+    }
+
+    private sealed class InputModel
+    {
+        public string AddressMainStreet { get; set; } = "";
+
+        public string AddressSecondaryStreet { get; set; } = "";
+
+        public string HouseNumber { get; set; } = "";
+
+        public string AddressNeighborhood { get; set; } = "";
+
+        public string AddressParish { get; set; } = "";
+    }
+}

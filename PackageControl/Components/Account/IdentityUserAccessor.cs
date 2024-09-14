@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using PackageControl.Data;
+using Entities;
 
 namespace PackageControl.Components.Account
 {

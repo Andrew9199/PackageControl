@@ -1,0 +1,24 @@
+﻿@page "/packages"
+@using Entities
+@using Microsoft.AspNetCore.Authorization
+@inject Business.B_Package PackageService
+
+@attribute [Authorize(Roles = "Admin,User")]
+
+<h3>Packages</h3>
+
+<ul>
+    @foreach (var package in packages)
+    {
+        <li>@package.PackageId - @package.AddressMainStreet</li>
+    }
+</ul>
+
+@code {
+    List<Package> packages = new List<Package>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        packages = PackageService.GetPackages(); // Si es asíncrono, deberías cambiarlo a await PackageService.GetPackagesAsync()
+    }
+}

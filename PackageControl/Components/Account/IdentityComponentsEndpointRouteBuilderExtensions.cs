@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using PackageControl.Components.Account.Pages;
 using PackageControl.Components.Account.Pages.Manage;
-using PackageControl.Data;
+using Entities;
 using System.Security.Claims;
 using System.Text.Json;
 

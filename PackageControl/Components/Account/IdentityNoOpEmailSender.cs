@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using PackageControl.Data;
+using Entities;
 
 namespace PackageControl.Components.Account
 {

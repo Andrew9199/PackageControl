@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using PackageControl.Data;
+using Entities;
 using System.Security.Claims;
 
 namespace PackageControl.Components.Account
