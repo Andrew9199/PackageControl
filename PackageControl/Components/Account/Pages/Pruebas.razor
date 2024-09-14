@@ -1,0 +1,11 @@
+﻿@page "/test"
+@inject NavigationManager NavigationManager
+
+<button @onclick="RedirectToPackageList">Go to Package List</button>
+
+@code {
+    private void RedirectToPackageList()
+    {
+        NavigationManager.NavigateTo("/counter", true);
+    }
+}

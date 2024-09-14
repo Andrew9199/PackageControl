@@ -1,102 +1,141 @@
-﻿@page "/packages/create"
-@using Entities
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
+﻿@page "/package/register"
+
 @using System.ComponentModel.DataAnnotations
-@using Microsoft.AspNetCore.Components.Authorization
+@using Entities
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+
 @inject UserManager<ApplicationUser> UserManager
-@inject Business.B_Package PackageService
 @inject NavigationManager NavigationManager
+@inject ILogger<PackageRegister> Logger
+@inject SignInManager<ApplicationUser> SignInManager
+@inject Business.B_Package PackageService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-@attribute [Authorize(Roles = "Admin,User")]
+<PageTitle>Register Package</PageTitle>
 
-<PageTitle>Agregar Paquete</PageTitle>
+<h1>Register a New Package</h1>
 
-<h3>Agregar Paquete</h3>
+<div class="row">
+    <div class="col-md-4">
+        <StatusMessage Message="@Message" />
+        <EditForm Model="Input" OnValidSubmit="RegisterPackage" FormName="register-package">
+            <DataAnnotationsValidator />
+            <h2>Register a new package</h2>
+            <hr />
+            <ValidationSummary class="text-danger" role="alert" />
 
-<EditForm Model="Input" OnValidSubmit="HandleCreatePackage" FormName="createPackageForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary class="text-danger" />
+            <!-- Neighborhood -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressNeighborhood" class="form-control" placeholder="Neighborhood" />
+                <label for="addressNeighborhood">Address Neighborhood</label>
+                <ValidationMessage For="() => Input.AddressNeighborhood" class="text-danger" />
+            </div>
 
-    <!-- Dirección Principal -->
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.AddressMainStreet" class="form-control" placeholder="Dirección Principal" id="addressMainStreet" />
-        <label for="addressMainStreet">Dirección Principal</label>
-        <ValidationMessage For="() => Input.AddressMainStreet" class="text-danger" />
+            <!-- Parish -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressParish" class="form-control" placeholder="Parish" />
+                <label for="addressParish">Address Parish</label>
+                <ValidationMessage For="() => Input.AddressParish" class="text-danger" />
+            </div>
+
+            <!-- Main Street -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressMainStreet" class="form-control" placeholder="Main Street" />
+                <label for="addressMainStreet">Address Main Street</label>
+                <ValidationMessage For="() => Input.AddressMainStreet" class="text-danger" />
+            </div>
+
+            <!-- Secondary Street -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressSecondaryStreet" class="form-control" placeholder="Secondary Street" />
+                <label for="addressSecondaryStreet">Address Secondary Street</label>
+                <ValidationMessage For="() => Input.AddressSecondaryStreet" class="text-danger" />
+            </div>
+
+            <!-- House Number -->
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.HouseNumber" class="form-control" placeholder="House Number" />
+                <label for="houseNumber">House Number</label>
+                <ValidationMessage For="() => Input.HouseNumber" class="text-danger" />
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Register Package</button>
+        </EditForm>
+        @if (showConfirmationMessage)
+        {
+            <div class="alert alert-success mt-3">
+                Package registered successfully! Redirecting...
+            </div>
+        }
     </div>
-
-    <!-- Dirección Secundaria -->
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.AddressSecondaryStreet" class="form-control" placeholder="Dirección Secundaria" id="addressSecondaryStreet" />
-        <label for="addressSecondaryStreet">Dirección Secundaria</label>
-        <ValidationMessage For="() => Input.AddressSecondaryStreet" class="text-danger" />
-    </div>
-
-    <!-- Número de Casa -->
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.HouseNumber" class="form-control" placeholder="Número de Casa" id="houseNumber" />
-        <label for="houseNumber">Número de Casa</label>
-        <ValidationMessage For="() => Input.HouseNumber" class="text-danger" />
-    </div>
-
-    <!-- Barrio -->
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.AddressNeighborhood" class="form-control" placeholder="Barrio" id="addressNeighborhood" />
-        <label for="addressNeighborhood">Barrio</label>
-        <ValidationMessage For="() => Input.AddressNeighborhood" class="text-danger" />
-    </div>
-
-    <!-- Parroquia -->
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.AddressParish" class="form-control" placeholder="Parroquia" id="addressParish" />
-        <label for="addressParish">Parroquia</label>
-        <ValidationMessage For="() => Input.AddressParish" class="text-danger" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Agregar Paquete</button>
-</EditForm>
+</div>
 
 @code {
-    private InputModel Input { get; set; } = new InputModel();
+    private IEnumerable<IdentityError>? identityErrors;
+    private bool showConfirmationMessage = false;
 
-    private async Task HandleCreatePackage()
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    // Método para redirigir a la lista de paquetes
+    private void RedirectToPackageList()
     {
-        // Obtener el estado de autenticación
+        // Usamos un Task.Delay para asegurar que la redirección ocurra después de la ejecución del código asíncrono
+        Task.Delay(500).ContinueWith(_ => NavigationManager.NavigateTo("/Package/List"));
+    }
+
+    public async Task RegisterPackage(EditContext editContext)
+    {
+        // Obtener el usuario autenticado
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = await UserManager.GetUserAsync(authState.User);
 
-        if (user != null)
+        if (user == null)
         {
-            var newPackage = new Package
-                {
-                    PackageId = Guid.NewGuid().ToString(), // Generamos un ID único
-                    AddressMainStreet = Input.AddressMainStreet,
-                    AddressSecondaryStreet = Input.AddressSecondaryStreet,
-                    HouseNumber = Input.HouseNumber,
-                    AddressNeighborhood = Input.AddressNeighborhood,
-                    AddressParish = Input.AddressParish,
-                    ApplicationUserId = user.Id // Relacionamos el paquete con el usuario actual
-                };
+            Logger.LogError("No se pudo obtener el usuario autenticado.");
+            return; // Mostrar un mensaje de error si el usuario no está autenticado
+        }
 
-            // Llamamos al servicio para agregar el paquete
-            PackageService.CreatePackage(newPackage); // Asegúrate de que este método sea asíncrono
+        var package = new Package
+            {
+                AddressNeighborhood = Input.AddressNeighborhood,
+                AddressParish = Input.AddressParish,
+                AddressMainStreet = Input.AddressMainStreet,
+                AddressSecondaryStreet = Input.AddressSecondaryStreet,
+                HouseNumber = Input.HouseNumber,
+                ApplicationUserId = user.Id // Asignamos el ID del usuario autenticado
+            };
 
-            // Redirigir a la página de listado de paquetes o a donde quieras
-            NavigationManager.NavigateTo("/packages");
+        try
+        {
+            await PackageService.CreatePackageAsync(package);
+            RedirectToPackageList(); // Llamamos al método para redirigir
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error while creating package: {ex.Message}");
+            // Mostrar mensaje de error en la UI
         }
     }
 
     private sealed class InputModel
     {
+        [Required(ErrorMessage = "The Address Neighborhood is required.")]
+        public string AddressNeighborhood { get; set; } = "";
+
+        [Required(ErrorMessage = "The Address Parish is required.")]
+        public string AddressParish { get; set; } = "";
+
+        [Required(ErrorMessage = "The Address Main Street is required.")]
         public string AddressMainStreet { get; set; } = "";
 
         public string AddressSecondaryStreet { get; set; } = "";
 
+        [Required(ErrorMessage = "The House Number is required.")]
         public string HouseNumber { get; set; } = "";
-
-        public string AddressNeighborhood { get; set; } = "";
-
-        public string AddressParish { get; set; } = "";
     }
 }
