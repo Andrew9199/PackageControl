@@ -1,6 +1,8 @@
 ﻿@page "/Roles/management"
 @attribute [Authorize(Roles = "Admin")]
 
+@rendermode InteractiveServer
+
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
@@ -12,32 +14,36 @@
 
 <PageTitle>Role Management</PageTitle>
 
-<h1>Role Management</h1>
-
 <div class="row">
     <div class="col-md-4">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" OnValidSubmit="AddRole" FormName="roleForm">
             <DataAnnotationsValidator />
-            <h2>Add a new role</h2>
+            <h2 class="mb-3">Add a new role</h2>
             <hr />
-            <ValidationSummary class="text-danger" role="alert" />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RoleName" class="form-control" placeholder="Role Name" />
+                <InputText @bind-Value="Input.RoleName" class="form-control" placeholder="Role Name" id="role-name" />
                 <label for="role-name">Role Name</label>
                 <ValidationMessage For="() => Input.RoleName" class="text-danger" />
             </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Add Role</button>
         </EditForm>
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <h2>Existing Roles</h2>
-        <ul>
+
+    <div class="col-md-6 offset-md-2">
+        <h2 class="mb-3">Existing Roles</h2>
+        <hr />
+        <ul class="list-group">
             @foreach (var role in roles)
             {
-                <li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
                     @role.Name
-                    <button @onclick="() => DeleteRole(role.Id)">Delete</button>
+                    <button @onclick="() => DeleteRole(role.Id)" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
                 </li>
             }
         </ul>

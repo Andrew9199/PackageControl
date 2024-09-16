@@ -7,40 +7,68 @@
 
 @attribute [Authorize(Roles = "Admin,User")]
 
-<h3>My Packages</h3>
+<div class="container-fluid mt-4">
+    <h3 class="mb-4">My Packages</h3>
 
-@if (userPackages.Any())
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Package ID</th>
-                <th>Neighborhood</th>
-                <th>Parish</th>
-                <th>Main Street</th>
-                <th>Secondary Street</th>
-                <th>House Number</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var package in userPackages)
-            {
-                <tr>
-                    <td>@package.PackageId</td>
-                    <td>@package.AddressNeighborhood</td>
-                    <td>@package.AddressParish</td>
-                    <td>@package.AddressMainStreet</td>
-                    <td>@package.AddressSecondaryStreet</td>
-                    <td>@package.HouseNumber</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No packages found for this user.</p>
-}
+    @if (userPackages.Any())
+    {
+        <div class="table-responsive">
+            <!-- Tabla personalizada con colores azul y morado -->
+            <table class="table table-hover table-bordered custom-table">
+                <thead class="custom-table-header">
+                    <tr>
+                        <th>Package ID</th>
+                        <th>Neighborhood</th>
+                        <th>Parish</th>
+                        <th>Main Street</th>
+                        <th>Secondary Street</th>
+                        <th>House Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var package in userPackages)
+                    {
+                        <tr>
+                            <td>@package.PackageId</td>
+                            <td>@package.AddressNeighborhood</td>
+                            <td>@package.AddressParish</td>
+                            <td>@package.AddressMainStreet</td>
+                            <td>@package.AddressSecondaryStreet</td>
+                            <td>@package.HouseNumber</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            No packages found for this user.
+        </div>
+    }
+</div>
+
+<!-- Estilos personalizados para la tabla -->
+<style>
+    .custom-table {
+        background-color: #f0f4ff; /* Fondo azul claro */
+        border-color: #6c5ce7; /* Bordes morados */
+    }
+
+    .custom-table-header {
+        background-color: #6c5ce7; /* Morado oscuro para el encabezado */
+        color: white; /* Texto blanco para el encabezado */
+    }
+
+    .custom-table tr:hover {
+        background-color: #a29bfe; /* Fondo morado claro al hacer hover */
+    }
+
+    .custom-table td, .custom-table th {
+        border-color: #6c5ce7; /* Bordes morados */
+    }
+</style>
 
 @code {
     private List<Package> userPackages = new List<Package>();

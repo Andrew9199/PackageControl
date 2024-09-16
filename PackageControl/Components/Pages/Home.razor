@@ -1,7 +1,108 @@
 ﻿@page "/"
+<PageTitle>Inicio - Package Control</PageTitle>
 
-<PageTitle>Home</PageTitle>
+<div class="container-fluid mt-4">
+    <h1 class="text-dark mb-4 font-weight-bold">Bienvenido a Package Control</h1>
 
-<h1>Hello, world!</h1>
+    <div class="row">
+        <div class="col-md-9">
+            <h2 class="text-dark">¿Qué es Package Control?</h2>
+            <p>
+                <strong>Package Control</strong> es una solución integral para la gestión de paquetería y correspondencia diseñada para mejorar la eficiencia operativa de las empresas de logística y mensajería. Basado en la experiencia de Fast-Courier, líder en el sector postal con más de 30 años de trayectoria, nuestro sistema se enfoca en optimizar los procesos de recepción, gestión y entrega de paquetes.
+            </p>
+            <p>
+                Con <strong>Package Control</strong>, tu empresa podrá disfrutar de una administración centralizada y automatizada de todos los paquetes y clientes, garantizando una experiencia de usuario eficiente y sin problemas.
+            </p>
+        </div>
+        <div class="col-md-3">
+            <img src="images/package-control-dashboard.png" alt="Package Control Dashboard" class="img-fluid rounded shadow-sm responsive-img" />
+        </div>
+    </div>
 
-Welcome to your new app.
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-light mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title">Gestión de Clientes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Administra la información de tus clientes con facilidad. Desde la creación hasta la actualización de datos, nuestro sistema te ofrece una interfaz intuitiva para mantener toda la información organizada y accesible.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title">Administración de Paquetes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Registra y rastrea cada paquete desde su ingreso hasta la entrega final. Nuestro sistema permite una gestión detallada de los paquetes, incluyendo su ubicación y estado en tiempo real.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title">Informes y Estadísticas</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Genera informes detallados y obtén estadísticas valiosas sobre el rendimiento de tu empresa. Los datos proporcionados te ayudarán a tomar decisiones informadas y a mejorar continuamente tus procesos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <h4 class="alert-heading">¡Únete a la Revolución en la Gestión de Paquetería!</h4>
+        <p>
+            Con <strong>Package Control</strong>, optimiza y automatiza tus procesos de logística y mensajería para alcanzar nuevos niveles de eficiencia. Para más información y una demostración en vivo, <a href="/contact" class="alert-link">contáctanos hoy mismo</a>.
+        </p>
+    </div>
+</div>
+
+<!-- Estilos personalizados para la página de inicio -->
+<style>
+    .text-dark {
+        color: #000000; /* Negro */
+    }
+
+    .font-weight-bold {
+        font-weight: 700; /* Negritas */
+    }
+
+    .card {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .alert-info {
+        background-color: #e9f7fa; /* Azul claro de fondo */
+        border-color: #bcdff1; /* Azul más claro */
+    }
+
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
+    }
+
+    ..responsive-img {
+        max-width: 80%; /* Ajusta este valor según tus necesidades */
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+</style>
