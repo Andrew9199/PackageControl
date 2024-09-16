@@ -1,0 +1,20 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Entities
+
+@inject RoleManager<IdentityRole> RoleManager
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Roles/assign-role" Match="NavLinkMatch.All">Asignar Role</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Roles/management">List Roles</NavLink>
+    </li>
+</ul>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Lógica adicional para inicializar si es necesario
+    }
+}

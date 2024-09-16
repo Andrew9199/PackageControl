@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Entities
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Package/my-packages" Match="NavLinkMatch.All">My Packages</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Package/register">Create Package</NavLink>
+    </li>
+    <AuthorizeView Roles="Admin">
+        <li class="nav-item">
+            <NavLink class="nav-link" href="Package/list">Todos los paquetes</NavLink>
+        </li>
+    </AuthorizeView>
+</ul>
+
+@code {
+    // Aquí podrías cargar datos adicionales si es necesario.
+    protected override async Task OnInitializedAsync()
+    {
+        // Carga de datos o lógica adicional
+    }
+}

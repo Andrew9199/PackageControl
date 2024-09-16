@@ -1,7 +1,11 @@
 ﻿@page "/user-packages/{userId}"
 @using Entities
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @inject Business.B_Package PackageService
+@inject UserManager<ApplicationUser> UserManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 @code {
     [Parameter]
@@ -9,11 +13,24 @@
 
     private List<Package> userPackages = new();
     private string errorMessage;
+    private string userName;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            // Obtener el nombre del usuario
+            var user = await UserManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                userName = user.UserName; // Suponiendo que `UserName` es el nombre del usuario
+            }
+            else
+            {
+                errorMessage = "User not found.";
+                return;
+            }
+
             // Obtener los paquetes del usuario seleccionado
             userPackages = (await PackageService.GetPackagesBySelectedUserAsync(userId)).ToList();
         }
@@ -30,7 +47,14 @@
     }
 }
 
-<h3>Packages</h3>
+@if (!string.IsNullOrEmpty(userName))
+{
+    <h3>Packages of @userName</h3>
+}
+else
+{
+    <h3>Loading...</h3>
+}
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
