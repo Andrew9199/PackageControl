@@ -1,4 +1,4 @@
-﻿@if (!string.IsNullOrEmpty(DisplayMessage))
+﻿@if (!string.IsNullOrEmpty(DisplayMessage) && DisplayMessage != DefaultMessage)
 {
     var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
     <div class="alert alert-@statusMessageClass" role="alert">
@@ -8,22 +8,31 @@
 
 @code {
     private string? messageFromCookie;
+    private const string DefaultMessage = "Valor predeterminado"; // Valor predeterminado
 
     [Parameter]
     public string? Message { get; set; }
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    [Inject]
+    public IHttpContextAccessor? HttpContextAccessor { get; set; }
 
     private string? DisplayMessage => Message ?? messageFromCookie;
 
     protected override void OnInitialized()
     {
-        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+        var httpContext = HttpContextAccessor?.HttpContext;
+        if (httpContext != null)
+        {
+            messageFromCookie = httpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
 
-        if (messageFromCookie is not null)
+            if (string.IsNullOrEmpty(messageFromCookie))
             {
-            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+                messageFromCookie = DefaultMessage; // Asigna el valor predeterminado aquí
+            }
+            else
+            {
+                httpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+            }
         }
     }
 }

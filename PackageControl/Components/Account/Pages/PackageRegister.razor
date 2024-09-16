@@ -87,7 +87,7 @@
     private void RedirectToPackageList()
     {
         // Usamos un Task.Delay para asegurar que la redirección ocurra después de la ejecución del código asíncrono
-        Task.Delay(500).ContinueWith(_ => NavigationManager.NavigateTo("/Package/List"));
+        Task.Delay(500).ContinueWith(_ => NavigationManager.NavigateTo("/package/my-packages"));
     }
 
     public async Task RegisterPackage(EditContext editContext)

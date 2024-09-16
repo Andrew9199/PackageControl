@@ -1,5 +1,7 @@
 ﻿using DataAccess;
 using Entities;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,11 +13,41 @@ namespace Business
     public class B_Package
     {
         private readonly PackageControlDataContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AuthenticationStateProvider _authenticationStateProvider;
 
-        public B_Package(PackageControlDataContext context)
+        public B_Package(PackageControlDataContext context, UserManager<ApplicationUser> userManager, AuthenticationStateProvider authenticationStateProvider)
         {
             _context = context;
+            _userManager = userManager;
+            _authenticationStateProvider = authenticationStateProvider;
         }
+
+        // Método que obtiene los paquetes de un usuario seleccionado por su UserId
+        public async Task<IEnumerable<Package>> GetPackagesBySelectedUserAsync(string selectedUserId)
+        {
+            // Obtener el estado de autenticación actual
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var currentUser = await _userManager.GetUserAsync(authState.User);
+
+            if (currentUser == null)
+            {
+                throw new UnauthorizedAccessException("No se pudo obtener el usuario autenticado.");
+            }
+
+            // Verificar si el usuario autenticado tiene permisos para ver estos paquetes
+            // Aquí puedes aplicar lógica de permisos, roles, etc.
+            if (!await _userManager.IsInRoleAsync(currentUser, "Admin") && currentUser.Id != selectedUserId)
+            {
+                throw new UnauthorizedAccessException("No tiene permiso para ver los paquetes de este usuario.");
+            }
+
+            // Retornar los paquetes del usuario seleccionado
+            return await _context.Packages
+                .Where(p => p.ApplicationUserId == selectedUserId)
+                .ToListAsync();
+        }
+
 
         /// <summary>
         /// Crea un nuevo Package y lo guarda en la base de datos.
@@ -65,6 +97,13 @@ namespace Business
         {
             return await _context.Packages
                 .Include(p => p.ApplicationUser) // Incluir los datos del usuario asociado
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Package>> GetPackagesByUserAsync(string userId)
+        {
+            return await _context.Packages
+                .Where(p => p.ApplicationUserId == userId) // Filtrar por el usuario
                 .ToListAsync();
         }
 

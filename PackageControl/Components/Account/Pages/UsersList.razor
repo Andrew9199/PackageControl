@@ -5,6 +5,8 @@
 @using Entities
 @using System.ComponentModel.DataAnnotations
 @inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 @attribute [Authorize(Roles = "Admin")]
 
@@ -17,7 +19,6 @@
     <DataAnnotationsValidator />
     <ValidationSummary class="text-danger" />
     <div class="mb-3">
-        <!-- Asegúrate de usar @bind-Value y no solo @bind -->
         <InputText @bind-Value="SearchModel.SearchTerm" class="form-control" placeholder="Search by name..." />
         <ValidationMessage For="() => SearchModel.SearchTerm" />
     </div>
@@ -43,6 +44,7 @@ else
                 <th>Last Name</th>
                 <th>Identification Type</th>
                 <th>Identification Number</th>
+                <th>Actions</th> <!-- Nueva columna para las acciones -->
             </tr>
         </thead>
         <tbody>
@@ -55,6 +57,10 @@ else
                     <td>@user.LastName</td>
                     <td>@user.IdentificationType</td>
                     <td>@user.IdentificationNumber</td>
+                    <td>
+                        <!-- Botón para ver los paquetes del usuario -->
+                        <button class="btn btn-info" @onclick="() => GoToUserPackages(user.Id)">Paquetes</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -78,8 +84,6 @@ else
     // Método para realizar la búsqueda
     private void OnSearch()
     {
-        Console.WriteLine("Entrando en OnSearch con valor: " + SearchModel.SearchTerm); // Depuración
-
         if (!string.IsNullOrWhiteSpace(SearchModel.SearchTerm))
         {
             filteredUsers = users
@@ -89,14 +93,20 @@ else
         }
         else
         {
-            // Si no hay término de búsqueda, mostrar todos los usuarios
             filteredUsers = users ?? new List<ApplicationUser>();
         }
 
-        StateHasChanged(); // Asegurarse de que la UI se actualice después de la búsqueda
+        StateHasChanged();
     }
 
-    // Modelo que representa los datos de entrada del formulario
+    // Método para redirigir a la página de paquetes de un usuario
+    private void GoToUserPackages(string userId)
+    {
+        // Redirigir a la página de paquetes del usuario con su userId como parámetro
+        NavigationManager.NavigateTo($"/user-packages/{userId}");
+    }
+
+    // Modelo para el formulario de búsqueda
     private sealed class UserSearchModel
     {
         public string SearchTerm { get; set; } = string.Empty;
